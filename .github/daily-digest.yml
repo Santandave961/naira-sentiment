@@ -1,0 +1,36 @@
+name: Naira Sentiment Daily Digest
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # 7 AM UTC daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install -r requirements.txt
+
+      - name: Run offline tests
+        run: python test_pipeline.py
+
+      - name: Run digest pipeline
+        run: python main.py
+        env:
+          NAIRA_API_KEY: ${{ secrets.NAIRA_API_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+
+      - name: Commit updated baseline
+        run: |
+          git config user.name "githu-actions[bot]"
+          git config user.email "githu-actions"
+        
