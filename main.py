@@ -68,6 +68,7 @@ def main():
     print("Checking for significant sentiment shift vs. previous period...")
     baseline_breakdown = load_baseline()
     shift = detect_shift(digest["sentiment_breakdown"], baseline_breakdown)
+    write_html_report(digest, shift)
     print(f"Shift check: {shift}")
 
     print("Sending daily digest notification...")
@@ -85,3 +86,34 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def write_html_report(digest: dict, shift: dict) -> None:
+    os.makedirs("docs", exist_ok=True)
+    timestamp = datetime.now(UTC).isoformat()
+    summary_html = digest["summary_text"].replace("\n", "<br>")
+    shift_line = (
+        f"⚠️ Significant shift detected ({shift['direction']})"
+        if shift["significant_shift"]
+        else "No significant shift detected."
+    )
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Naira Sentiment Digest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {{ font-family: -apple-system, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; line-height: 1.5; }}
+    h1 {{ font-size: 1.4rem; }}
+    .meta {{ color: #666; font-size: 0.9rem; }}
+  </style>
+</head>
+<body>
+  <h1>Naira Sentiment Digest</h1>
+  <p class="meta">Last updated: {timestamp}</p>
+  <p>{summary_html}</p>
+  <p>{shift_line}</p>
+</body>
+</html>"""
+    with open("docs/index.html", "w") as f:
+        f.write(html)
