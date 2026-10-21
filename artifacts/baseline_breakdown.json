@@ -1,5 +1,5 @@
 {
-  "noise": 3,
-  "bullish": 5,
-  "bearish": 7
+  "bearish": 10,
+  "noise": 2,
+  "bullish": 3
 }
